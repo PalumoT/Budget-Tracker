@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="Budget" max_length="40" name="x_44552_bt_budget" type="collection">
+        <element label="Currency" max_length="32" name="currency" reference="fx_currency" type="reference"/>
+        <element label="Duration (month)" mandatory="true" max_length="40" name="duration_month" type="integer"/>
+        <element label="End Date" max_length="40" name="end_date" read_only="true" type="glide_date"/>
+        <element label="Name" max_length="40" name="name" type="string"/>
+        <element default="0" label="Planned" max_length="20" name="planned" type="decimal"/>
+        <element default="0" label="Remaining" max_length="20" name="remaining" read_only="true" type="decimal"/>
+        <element default="0" label="Spent" max_length="20" name="spent" read_only="true" type="decimal"/>
+        <element label="Start Date" max_length="40" name="start_date" type="glide_date"/>
+        <index name="index">
+            <element name="currency"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="Monthly Budget" max_length="40" name="x_44552_bt_monthly_budget" type="collection">
+        <element label="Budget" max_length="32" name="budget" read_only="true" reference="x_44552_bt_budget" type="reference"/>
+        <element label="End Date" max_length="40" name="end_date" read_only="true" type="glide_date"/>
+        <element default="0" label="Forecast" max_length="20" name="forecast" type="decimal"/>
+        <element display="true" label="Period" max_length="40" name="period" read_only="true" type="string"/>
+        <element default="0" label="Remaining" max_length="20" name="remaining" read_only="true" type="decimal"/>
+        <element default="0" label="Spent" max_length="20" name="spent" read_only="true" type="decimal"/>
+        <element label="Start Date" max_length="40" name="start_date" read_only="true" type="glide_date"/>
+        <index name="index">
+            <element name="budget"/>
+        </index>
+    </element>
+</database>

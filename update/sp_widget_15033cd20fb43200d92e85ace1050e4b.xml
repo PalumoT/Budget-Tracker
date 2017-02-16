@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <client_script><![CDATA[function($scope) {
+  var c = this;
+	
+	$scope.selectBudget = false;
+	$scope.index = 0;
+	$scope.row = -1;
+	$scope.column = -1;
+	$scope.budget = $scope.data.budgets[0];
+	$scope.max_range = 12;
+	$scope.range = function(){
+		return 12 / $scope.layout.model.value;
+	}
+	
+	$scope.layout = {
+		"model": {"value": 2,"label": "6 months"},
+		"options": [
+			{"value": 2,"label": "6 months", "header": '1em'},
+			{"value": 4,"label": "3 months", "header": '1.2em'},
+			{"value": 12,"label": "1 months", "header": '1.5em'}
+		]
+	};
+	
+	$scope.getTotalExpenses = function(month){
+		var total = 0;
+		for(var i=0; i<month.categories.length; i++){
+			var category = month.categories[i];
+			total += parseFloat(category.spent);
+		}
+		
+		return Math.round(total).toFixed(2);
+	}
+	
+	$scope.getRemainingBudget = function(budget){
+		var total = 0;
+		for(var i=0; i<months.length; i++){
+			var category = months[i];
+			total += parseFloat(month.spent);
+		}
+		
+		return Math.round(total).toFixed(2);
+	}
+	
+	$scope.isVisible = function(index){
+		return $scope.index <= index && index < ($scope.index + 12/$scope.layout.model.value);
+	}
+	
+	$scope.setTimeFrame = function(){
+		$scope.filter.period = "";
+		$scope.filter.date_range.from = $scope.budget.months[$scope.index].start_date;
+		$scope.filter.date_range.to = $scope.budget.months[$scope.index + $scope.range() - 1].end_date;
+		setupChart();
+	}
+	
+	$scope.slide = function(direction){
+		if(direction === 'left' && $scope.index > 0){
+			$scope.index --;
+		}
+		
+		if(direction === 'right' && ($scope.index + $scope.range()) < $scope.max_range){
+			$scope.index ++;
+		}
+		
+		$scope.setTimeFrame();
+	}
+	
+	$scope.showTransactions = function(row, column){
+		$scope.row = row;
+		$scope.column = column;
+		var budget = $scope.budget;
+		if(column >= 0 && column < budget.months.length){
+			var month = budget.months[column];
+			$scope.filter.period = month.period;
+			
+			if(row >= 0 && row < month.categories.length){
+				$scope.filter.category = month.categories[row].name;
+			}else{
+				$scope.filter.category = "";
+			}
+		}
+	}
+	
+	$scope.hideTransactions = function(){
+		$scope.row = -1;
+		$scope.column = -1;
+		$scope.filter.period = "";
+		$scope.filter.category = "";
+	}
+	
+	setupChart = function(){
+		$scope.charts = [{"line": {}}, {"doughnut": {}}];
+		var line = {"labels": [],
+								"series": ["Forecasts", "Actuals"],
+								"data": [
+									[],[]
+								]};
+		
+		var doughnut = {};
+		doughnut.labels = [];
+		doughnut.data = [];
+		doughnut.show = false;
+		var categories = [];
+		
+		for(var i=$scope.index; i<$scope.index + $scope.range(); i++){
+			var month = $scope.budget.months[i];
+			line.labels.push(month.period.toString());
+			line.data[0].push(month.amount.forecast);
+			line.data[1].push(-1 * month.amount.spent);
+			
+			for(var j=0; j<month.categories.length; j++){
+				var category = month.categories[j];
+				var position = doughnut.labels.indexOf(category.name.toString());
+				
+				
+				if(position == -1){
+					doughnut.labels.push(category.name.toString());
+					doughnut.data.push(parseFloat(category.spent));
+				}else{
+					doughnut.data[position] += parseFloat(category.spent);
+				}
+				
+				if(parseFloat(category.spent) != 0){
+					doughnut.show = true;
+				}
+			}
+		}
+		
+		line.onClick = function (points, evt) {
+			console.log(points, evt);
+		};
+		
+		line.datasetOverride = [{ yAxisID: 'y-axis-1' }, { yAxisID: 'y-axis-2' }];
+		line.options = {
+			scales: {
+				yAxes: [
+					{
+						id: 'y-axis-1',
+						type: 'linear',
+						display: true,
+						position: 'left'
+					},
+					{
+						id: 'y-axis-2',
+						type: 'linear',
+						display: true,
+						position: 'right'
+					}
+				]
+			}
+		};
+		
+		line.colors = [ '#803690', '#00ADF9', '#DCDCDC', '#46BFBD', '#FDB45C', '#949FB1', '#4D5360'];
+		$scope.charts = {"line": line, "doughnut": doughnut};
+	}
+	
+	$scope.filter = {
+		"date_range":
+			{"from": "2017/01/01", 
+			 "to": "2017/01/31"
+			},
+		"category": "",
+		"period": ""
+	};
+	
+	$scope.filterField = function(){
+		return function (item) {
+			var filter = $scope.filter;
+			var range = filter.date_range;
+			var from = range.from;
+			var to = range.to;
+			
+			if(from != "" && item.date < from){
+				return false;
+			}
+			
+			if(to != "" && item.date > to){
+				return false;
+			}
+			
+			if(filter.category != "" &&
+				 filter.category != item.category){
+				return false;
+			}
+			
+			if(filter.period != "" &&
+				 filter.period != item.period)
+			{
+				return false;
+			}
+			
+      return true;
+    }
+	}
+
+	$scope.reverse = true;
+	$scope.sortBy = function(propertyName) {
+		if($scope.propertyName === propertyName){
+			$scope.reverse = !$scope.reverse ? true : "";
+			$scope.propertyName = $scope.reverse != "" ? propertyName : "";
+		}else{
+			$scope.reverse = false;
+			$scope.propertyName = propertyName;
+		}
+  };
+	
+	$scope.filterTransactions = function(category){
+		$scope.filter.category = $scope.filter.category === category ? '' : category;
+	}
+	
+	$scope.loadBudget = function(){
+		$scope.selectBudget = false;
+		$scope.setTimeFrame();
+	}
+	
+	$scope.setTimeFrame();
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>h1{
+  margin-bottom:15px
+}
+
+.income{
+  color:green;
+  font-size:80%
+}
+
+.expense{
+  color:#c30b06;
+  font-size:80%
+}
+
+ul{
+  margin-top:10px;
+}
+
+.glyphicon{
+  cursor: pointer;
+  font-size:10px
+}
+
+.month{
+  border:1px solid grey;
+  border-radius: 0.2em;
+  padding-left:10px;
+  padding-right:10px;
+  padding-bottom:10px;
+}
+
+.transaction{
+  font-size:80%;
+  margin-top:5px;
+}
+
+.category{
+  margin-top:10px;
+}
+
+th&gt;span{
+  cursor:pointer;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>budget_tracker</id>
+        <internal>false</internal>
+        <link/>
+        <name>Budget Tracker</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	var budgets = [];
+	var budgetRecord = new GlideRecord("x_44552_bt_budget");
+	budgetRecord.query();
+	
+	while(budgetRecord.next()){
+		var budget = {
+			"sys_id": budgetRecord.sys_id.toString(),
+			"name": budgetRecord.name.toString(),
+			"amount": {
+				"planned": budgetRecord.planned.toString(),
+				"spent": budgetRecord.spent.toString(),
+				"remaining": budgetRecord.remaining.toString()
+			},
+			"currency":{
+				"symbol": budgetRecord.currency.symbol.toString()
+			},
+			"transactions": [],
+			"months": []
+		};
+		
+		var categories = [];
+		var categoryRecord = new GlideRecord("x_44552_bt_category");
+		categoryRecord.addQuery("budget", budgetRecord.sys_id);
+		categoryRecord.orderBy("start_date");
+		categoryRecord.query();
+		
+		while(categoryRecord.next()){
+			categories.push({
+				"name": categoryRecord.name.toString(),
+				"sys_id": categoryRecord.sys_id.toString(),
+				"spent": 0
+			});
+		}
+
+		var months = [];
+		var monthRecord = new GlideRecord("x_44552_bt_monthly_budget");
+		monthRecord.addQuery("budget", budgetRecord.sys_id);
+		monthRecord.orderBy("start_date");
+		monthRecord.query();
+		
+		while(monthRecord.next()){
+			var month = {
+				"sys_id": monthRecord.sys_id.toString(),
+				"period": monthRecord.period.getDisplayValue(),
+				"categories": [],
+				"start_date": monthRecord.start_date.toString(),
+				"end_date": monthRecord.end_date.toString(),
+				"amount": {
+					"forecast": monthRecord.forecast.toString(),
+					"spent": monthRecord.spent.toString(),
+					"remaining": monthRecord.remaining.toString()
+				}
+			};
+		
+			for(var i=0; i<categories.length; i++){
+				var category = {
+					"name": categories[i].name.toString(),
+					"sys_id": categories[i].sys_id.toString(),
+					"spent": 0,
+					"transactions": []
+				};
+			
+				var transactionRecord = new GlideRecord("x_44552_bt_transaction");
+				transactionRecord.addQuery("month", month.sys_id);
+				transactionRecord.addQuery("category", category.sys_id);
+				transactionRecord.query();
+
+				while(transactionRecord.next()){
+					var transaction = {
+						"payee": transactionRecord.payee.toString(),
+						"amount": parseFloat(transactionRecord.amount),
+						"category": transactionRecord.category.getDisplayValue(),
+						"account": transactionRecord.account.getDisplayValue(),
+						"period": transactionRecord.month.getDisplayValue(),
+						"type": transactionRecord.type.toString(),
+						"date": transactionRecord.date.toString(),
+						"currency": {
+							"code": transactionRecord.account.currency.code.toString(),
+							"symbol": transactionRecord.account.currency.symbol.toString()
+						}
+					};
+					
+					category.spent += parseFloat(transaction.amount);					
+					category.group = transactionRecord.group.sys_id.toString();
+					category.transactions.push(transaction);
+					budget.transactions.push(transaction);
+				}
+				
+				month.categories.push(category);
+			}
+			
+			budget.months.push(month);
+		}
+		budgets.push(budget);
+	}
+	
+	data.budgets = budgets;	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-09 16:19:01</sys_created_on>
+        <sys_customer_update>true</sys_customer_update>
+        <sys_id>15033cd20fb43200d92e85ace1050e4b</sys_id>
+        <sys_mod_count>1121</sys_mod_count>
+        <sys_name>Budget Tracker</sys_name>
+        <sys_package display_value="Budget Tracker" source="x_44552_bt">90861c1a0f743200d92e85ace1050ecc</sys_package>
+        <sys_policy/>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
+        <sys_scope display_value="Budget Tracker">90861c1a0f743200d92e85ace1050ecc</sys_scope>
+        <sys_update_name>sp_widget_15033cd20fb43200d92e85ace1050e4b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-16 12:45:51</sys_updated_on>
+        <template><![CDATA[<div class="container" style="margin-bottom: 50px">
+  <h2 class="row">
+    <div class="col-xs-12 col-lg-8" style="margin-bottom:20px">
+      <div class="row">
+        <div class="col-xs-5 col-lg-4">
+          <span ng-show="!selectBudget" ng-click="selectBudget = true" style="cursor:pointer; font-size:0.8em">{{ budget.name }}</span>
+          <span ng-show="selectBudget" class="form-inline"> 
+            <select class="form-control"
+                    ng-model="budget"
+                    ng-options="item.name for item in data.budgets track by item.sys_id"
+                    ng-change="loadBudget()"></select>
+            <span class="glyphicon glyphicon-remove" ng-click="selectBudget = false"></span>
+          </span>
+        </div>
+        <div class="col-xs-7 col-lg-8">
+          <table class="table-bordered" style="font-size:0.5em; width:100%">
+            <thead>
+              <tr>
+                <th class="text-center" width="33%">Forecast</th>
+                <th class="text-center" width="33%">Expenses</th>
+                <th class="text-center" width="33%">Remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="text-center">
+                <td>
+                  <span ng-class="budget.amount.planned >= 0 ? 'income' : 'expense'">
+                    {{ budget.amount.planned | currency: budget.currency.symbol }}
+                  </span>
+                </td>
+                <td>
+                  <span ng-class="budget.amount.spent >= 0 ? 'income' : 'expense'">
+                   {{ budget.amount.spent | currency: budget.currency.symbol }}
+                  </span>
+                </td>
+                <td>
+                  <span ng-class="budget.amount.remaining >= 0 ? 'income' : 'expense'">
+                    {{ budget.amount.remaining | currency: budget.currency.symbol }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      	</div>  
+      </div>
+    </div>
+    <div class="col-xs-12 col-lg-4">
+      <div class="row">
+        <div class="col-xs-8 col-lg-6">  
+          <select class="form-control" ng-model="layout.model"
+                  ng-options="option.label for option in layout.options track by option.value"
+                  ng-change="setTimeFrame()">
+          </select>
+        </div>
+        <div class="col-xs-4 col-lg-6 text-right">
+          <a href="sp?id=form&&sys_id=-1&&table=x_44552_bt_transaction" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span></a>
+          <button class="btn btn-primary" ng-click="slide('left')"><span class="glyphicon glyphicon-chevron-left"></span></button>
+          <button class="btn btn-primary" ng-click="slide('right')"><span class="glyphicon glyphicon-chevron-right"></span></button>
+        </div>
+      </div>
+    </div>  
+  </h2>
+  <div class="row" style="margin-top:30px">
+    <div class="col-xs-{{ layout.model.value }} col-lg-{{ layout.model.value }}" ng-repeat="month in budget.months | limitTo:12/layout.model.value:index" ng-init="index = $index">
+      <div class="month">
+        <div class="text-center" style="height:50px; line-height:50px; cursor:pointer;">
+          <span ng-if="column != $index" ng-click="showTransactions(-1, $index)" style="border-bottom:1px solid grey; font-size:{{ layout.model.header }}">{{ month.period }}</span>
+          <span ng-if="column == $index" ng-click="hideTransactions()" style="border-bottom:1px solid grey; font-size:{{ layout.model.header }}"><strong>{{ month.period }}</strong></span>
+        </div>
+        <div ng-show="layout.model.value > 1"
+             ng-repeat="category in month.categories"
+             class="category">
+          <table width="100%">
+            <tr>
+              <td width="70%" ng-show="!(row == $index && column == index)"
+                  ng-click="showTransactions($index, index)" style="cursor:pointer">
+                	{{ category.name }}
+              </td>
+              <td width="70%" ng-show="row == $index && column == index"
+                  ng-click="hideTransactions()"
+                   style="cursor:pointer">
+                <strong>{{ category.name }}</strong>
+              </td>
+              <td class="text-right">{{ category.spent | currency: budget.currency.symbol }}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="margin-top:15px">
+          <table width="100%">
+            <tr>
+              <td width="70%">Budget:</td>
+              <td class="text-right">{{ month.amount.forecast | currency: budget.currency.symbol }}</td>
+            </tr>
+            <tr>
+              <td width="70%">Spent
+              <td class="text-right">{{ month.amount.spent | currency: budget.currency.symbol }}</td>
+            </tr>
+            <tr>
+              <td width="70%">Remaining:</td>
+              <td class="text-right">{{ month.amount.remaining | currency: budget.currency.symbol }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:30px">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>
+            <span ng-click="sortBy('date')">Date</span>
+            <span ng-show="propertyName == 'date'" class="pull-right">
+              <span ng-show="!reverse" class="glyphicon glyphicon-chevron-up"></span>
+              <span ng-show="reverse" class="glyphicon glyphicon-chevron-down"></span>
+            </span>
+             <span ng-show="filter.period != ''" class="pull-right">
+              <span ng-click="hideTransactions()" class="glyphicon glyphicon-filter"></span>
+            </span>
+          </th>
+          <th>
+            <span ng-click="sortBy('payee')">Payee</span>
+            <span ng-show="propertyName == 'payee'" class="pull-right">
+              <span ng-show="!reverse" class="glyphicon glyphicon-chevron-up"></span>
+              <span ng-show="reverse" class="glyphicon glyphicon-chevron-down"></span>
+            </span>
+          </th>
+          <th>
+            <span ng-click="sortBy('category')">Category</span>
+            <span ng-show="propertyName == 'category'" class="pull-right">
+              <span ng-show="!reverse" class="glyphicon glyphicon-chevron-up"></span>
+              <span ng-show="reverse" class="glyphicon glyphicon-chevron-down"></span>
+            </span>
+            <span ng-show="filter.category != ''" class="pull-right">
+              <span class="glyphicon glyphicon-filter"></span>
+            </span>
+          </th>
+          <th class="text-center">
+            <span ng-click="sortBy('account')">Account</span>
+            <span ng-show="propertyName == 'account'" class="pull-right">
+          	<span ng-show="!reverse" class="glyphicon glyphicon-chevron-up"></span>
+              <span ng-show="reverse" class="glyphicon glyphicon-chevron-down"></span>
+            </span>
+          </th>
+          <th class="text-center">
+            <span ng-click="sortBy('amount')">Amount</span>
+            <span ng-show="propertyName == 'amount'" class="pull-right">
+              <span ng-show="!reverse" class="glyphicon glyphicon-chevron-up"></span>
+              <span ng-show="reverse" class="glyphicon glyphicon-chevron-down"></span>
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="transaction in result = (budget.transactions | filter:filterField()) | orderBy:propertyName:reverse">
+          <td>{{transaction.date}}</td>
+          <td>{{transaction.payee}}</td>
+          <td>{{transaction.category}}</td>
+          <td class="text-center">{{ transaction.account }}</td>
+          <td class="text-center">{{ transaction.amount | currency: transaction.currency.symbol}}</td>
+        </tr>
+        <td ng-if="result.length == 0" colspan="5">
+          <em ng-if="filter.period == ''">No transaction between {{ filter.date_range.from | date : "MMM-yyyy"}} and {{ filter.date_range.to | date : "MMM-yyyy"}}</em>
+      		<em ng-if="filter.period != ''">No transaction for the period of {{ filter.period }}</em>
+        </td>
+      </tbody>
+    </table>
+    <span ng-if="result.length != 0">
+      <em ng-if="filter.period == ''">Transactions are filtered from {{ filter.date_range.from | date }} until {{ filter.date_range.to | date }}<span ng-if="filter.category"> for category {{ filter.category }}</span></em>
+      <em ng-if="filter.period != ''">Transactions are filtered for the period of {{ filter.period }}<span ng-if="filter.category"> for category {{ filter.category }}</span></em>
+    </span>
+  </div>
+  <div class="row" style="height:300px">
+    <div class="col-xs-12 col-lg-6" style="margin-top:30px;">
+      <canvas id="doughnut" class="chart chart-line"
+              chart-data="charts.line.data"
+              chart-series="charts.line.series"
+              chart-labels="charts.line.labels"
+              chart-colours="charts.line.colors"
+              chart-click="charts.line.onClick">
+      </canvas>
+      <div class="text-center"><span style="border-bottom:1px solid grey">Forecast vs. Expenses</span></div>
+    </div>
+    <div class="col-xs-12 col-lg-6" style="margin-top:30px;">
+      <div ng-show="!charts.doughnut.show" class="text-center" style="line-height:300px">
+        No data to display
+      </div>
+      <canvas id="doughnut" ng-show="charts.doughnut.show"
+              class="chart chart-doughnut"
+              chart-data="charts.doughnut.data"
+              chart-labels="charts.doughnut.labels">
+      </canvas>
+      <div class="text-center"><span style="border-bottom:1px solid grey">Expenses by category</span></div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="Group" max_length="40" name="x_44552_bt_group" type="collection">
+        <element display="true" label="Category" max_length="32" name="category" reference="x_44552_bt_category" type="reference"/>
+        <element label="Month" max_length="32" name="month" reference="x_44552_bt_monthly_budget" type="reference"/>
+        <index name="index">
+            <element name="month"/>
+        </index>
+        <index name="index2">
+            <element name="category"/>
+        </index>
+    </element>
+</database>

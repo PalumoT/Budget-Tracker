@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="Category" max_length="40" name="x_44552_bt_category" type="collection">
+        <element label="Budget" mandatory="true" max_length="32" name="budget" reference="x_44552_bt_budget" type="reference"/>
+        <element label="Name" mandatory="true" max_length="40" name="name" type="string"/>
+        <element default="0" label="Planned" max_length="20" name="planned" type="decimal"/>
+        <element default="0" label="Remaining" max_length="20" name="remaining" type="decimal"/>
+        <element default="0" label="Spent" max_length="20" name="spent" type="decimal"/>
+        <index name="index">
+            <element name="budget"/>
+        </index>
+    </element>
+</database>

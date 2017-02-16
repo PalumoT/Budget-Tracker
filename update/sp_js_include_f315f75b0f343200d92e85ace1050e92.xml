@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sp_js_include">
+    <sp_js_include action="INSERT_OR_UPDATE">
+        <display_name>https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.js</display_name>
+        <source>url</source>
+        <sys_class_name>sp_js_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-13 09:01:11</sys_created_on>
+        <sys_customer_update>true</sys_customer_update>
+        <sys_id>f315f75b0f343200d92e85ace1050e92</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.js</sys_name>
+        <sys_package display_value="Budget Tracker" source="x_44552_bt">90861c1a0f743200d92e85ace1050ecc</sys_package>
+        <sys_policy/>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
+        <sys_scope display_value="Budget Tracker">90861c1a0f743200d92e85ace1050ecc</sys_scope>
+        <sys_ui_script/>
+        <sys_update_name>sp_js_include_f315f75b0f343200d92e85ace1050e92</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-13 09:01:11</sys_updated_on>
+        <url>https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.js</url>
+    </sp_js_include>
+</record_update>

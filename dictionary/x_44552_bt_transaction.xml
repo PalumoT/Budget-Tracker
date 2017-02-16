@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element attributes="hasLabels=true" label="Transaction" max_length="40" name="x_44552_bt_transaction" type="collection">
+        <element label="Account" mandatory="true" max_length="32" name="account" reference="x_44552_bt_account" type="reference"/>
+        <element default="0" label="Amount" mandatory="true" max_length="20" name="amount" type="decimal"/>
+        <element label="Budget" max_length="32" name="budget" reference="x_44552_bt_budget" type="reference"/>
+        <element label="Category" mandatory="true" max_length="32" name="category" reference="x_44552_bt_category" type="reference"/>
+        <element label="Date" mandatory="true" max_length="40" name="date" type="glide_date"/>
+        <element label="Group" max_length="32" name="group" reference="x_44552_bt_group" type="reference"/>
+        <element label="Month" max_length="32" name="month" reference="x_44552_bt_monthly_budget" type="reference"/>
+        <element label="Payee" mandatory="true" max_length="40" name="payee" type="string"/>
+        <element choice="1" default="expense" label="Type" max_length="40" name="type" type="choice">
+            <choice>
+                <element label="Expense" value="expense"/>
+                <element label="Income" value="income"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="month"/>
+        </index>
+        <index name="index2">
+            <element name="category"/>
+        </index>
+        <index name="index3">
+            <element name="account"/>
+        </index>
+        <index name="index4">
+            <element name="budget"/>
+        </index>
+        <index name="index5">
+            <element name="group"/>
+        </index>
+    </element>
+</database>

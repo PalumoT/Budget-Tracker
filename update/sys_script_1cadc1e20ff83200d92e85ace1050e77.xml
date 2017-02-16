@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>x_44552_bt_transaction</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition table="x_44552_bt_transaction">categoryVALCHANGES^ORdateVALCHANGES^EQ<item endquery="false" field="category" goto="false" newquery="false" operator="VALCHANGES" or="false" value=""/>
+            <item endquery="false" field="date" goto="false" newquery="false" operator="VALCHANGES" or="true" value=""/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </filter_condition>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Set Monthly Budget</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+	var category = current.category;
+	var date = current.date;
+	
+	var month = new GlideRecord("x_44552_bt_monthly_budget");
+	month.addQuery("budget", category.budget.sys_id);
+	month.addQuery("start_date", "<=", current.date);
+	month.addQuery("end_date", ">=", current.date);
+	month.query();
+	
+	if(month.next()){
+		current.month = month.sys_id;
+	}else{
+		gs.info("Error\\n" + category.budget.sys_id + "\n" + current.date);
+	}
+	
+// 	var group = new GlideRecord("x_44552_bt_group");
+// 	group.addQuery("category", current.category);
+// 	group.addQuery("month", current.month);
+// 	group.query();
+	
+// 	if(group.next()){
+// 		current.group = group.sys_id;
+// 	}else{
+// 		group.newRecord();
+// 		group.month = month.sys_id;
+// 		group.category = category.sys_id;
+// 		current.group = group.insert();
+// 	}
+	
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-10 12:57:52</sys_created_on>
+        <sys_customer_update>true</sys_customer_update>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>1cadc1e20ff83200d92e85ace1050e77</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>Set Monthly Budget</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Budget Tracker" source="x_44552_bt">90861c1a0f743200d92e85ace1050ecc</sys_package>
+        <sys_policy/>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
+        <sys_scope display_value="Budget Tracker">90861c1a0f743200d92e85ace1050ecc</sys_scope>
+        <sys_update_name>sys_script_1cadc1e20ff83200d92e85ace1050e77</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-13 15:28:18</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=1cadc1e20ff83200d92e85ace1050e77"/>
+</record_update>

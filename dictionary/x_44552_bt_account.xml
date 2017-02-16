@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="Account" max_length="40" name="x_44552_bt_account" type="collection">
+        <element label="Currency" max_length="32" name="currency" reference="fx_currency" type="reference"/>
+        <element label="Name" max_length="40" name="name" type="string"/>
+        <element default="0" label="Working Balance" max_length="20" name="working_balance" type="decimal"/>
+        <index name="index">
+            <element name="currency"/>
+        </index>
+    </element>
+</database>
